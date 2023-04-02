@@ -4,7 +4,9 @@ namespace Application.Common.Interfaces;
 
 public interface IFileAttachmentService
 {
-    public Task<AttachmentFileDto> GetAttachmentReferenceAsync(string path, CancellationToken ct);
-    public Task<string> AddAttachmentAsync(AttachmentToAdd attachment, CancellationToken ct);
-    public Task RemoveAttachmentIfExistAsync(string name, CancellationToken ct);
+    Task<AttachmentFileDto> GetAttachmentReferenceAsync(string path, CancellationToken ct);
+    Task<string> AddAttachmentAsync(AttachmentInFileSystem attachment, CancellationToken ct);
+    Task RemoveAttachmentIfExistAsync(string path, CancellationToken ct);
+    Task RemoveAttachmentAsync(string path, CancellationToken ct);
+    Task<AttachmentInFileSystem> GetContent(string path, CancellationToken ct);
 }

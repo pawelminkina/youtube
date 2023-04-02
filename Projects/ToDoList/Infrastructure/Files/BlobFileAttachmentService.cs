@@ -28,10 +28,10 @@ public class BlobFileAttachmentService : IFileAttachmentService
         }
 
         var props = await fileClient.GetPropertiesAsync(cancellationToken: ct);
-        return new AttachmentFileDto() {Name = fileClient.Name, SizeInBytes = props.Value.ContentLength};
+        return new AttachmentFileDto() { Name = fileClient.Name, SizeInBytes = props.Value.ContentLength };
     }
 
-    public async Task<string> AddAttachmentAsync(AttachmentToAdd attachment, CancellationToken ct)
+    public async Task<string> AddAttachmentAsync(AttachmentInFileSystem attachment, CancellationToken ct)
     {
         var newName = $"{Guid.NewGuid()}_{attachment.Name}";
 
@@ -46,12 +46,39 @@ public class BlobFileAttachmentService : IFileAttachmentService
         return newName;
     }
 
-    public async Task RemoveAttachmentIfExistAsync(string name, CancellationToken ct)
+    public async Task<AttachmentInFileSystem> GetContent(string path, CancellationToken ct)
     {
-        var fileClient = _blobContainerClient.GetBlobClient(name);
+        var fileClient = _blobContainerClient.GetBlobClient(path);
+        if (!await fileClient.ExistsAsync(ct))
+        {
+            throw new NotFoundException($"Attachment with path: {path} was not found is blob storage");
+        }
+
+        var downloadResult = await fileClient.DownloadStreamingAsync(cancellationToken: ct);
+
+        var response = downloadResult.GetRawResponse();
+        if (response.IsError)
+        {
+            throw new InvalidOperationException($"There was issue with downloading attachment in path: {path}, status: {response.Status}");
+        }
+
+        return new AttachmentInFileSystem() {Content = downloadResult.Value.Content, Name = path};
+
+    }
+
+    public async Task RemoveAttachmentIfExistAsync(string path, CancellationToken ct)
+    {
+        var fileClient = _blobContainerClient.GetBlobClient(path);
         if (await fileClient.ExistsAsync(ct))
         {
-            await fileClient.DeleteAsync(cancellationToken:ct);
+            await fileClient.DeleteAsync(cancellationToken: ct);
         }
+    }
+
+    public async Task RemoveAttachmentAsync(string path, CancellationToken ct)
+    {
+        var fileClient = _blobContainerClient.GetBlobClient(path);
+
+        await fileClient.DeleteAsync(cancellationToken: ct);
     }
 }

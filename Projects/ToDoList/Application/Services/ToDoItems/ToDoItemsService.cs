@@ -56,7 +56,7 @@ public class ToDoItemsService : IToDoItemsService
         }
     }
 
-    public async Task<Guid> AddAsync(ToDoItemToAdd toDoItem, IEnumerable<AttachmentToAdd> attachments, CancellationToken ct)
+    public async Task<Guid> AddAsync(ToDoItemToAdd toDoItem, IEnumerable<AttachmentInFileSystem> attachments, CancellationToken ct)
     {
         try
         {
@@ -118,16 +118,15 @@ public class ToDoItemsService : IToDoItemsService
 
     private async IAsyncEnumerable<AttachmentDto> GetAttachmentReferencesForFileAsync(ToDoItem item, [EnumeratorCancellation] CancellationToken ct)
     {
-        var attachmentPaths = item.Attachments.Select(f => f.Path);
-
-        foreach (var attachmentPath in attachmentPaths)
+        foreach (var attachment in item.Attachments)
         {
-            var attachment = await _attachmentService.GetAttachmentReferenceAsync(attachmentPath, ct);
+            var attachmentFromFiles = await _attachmentService.GetAttachmentReferenceAsync(attachment.Path, ct);
 
             yield return new AttachmentDto()
             {
-                Id = Path.GetFileName(attachment.Name),
-                SizeInMb = ByteSize.FromBytes(attachment.SizeInBytes).MegaBytes.ToString(CultureInfo.InvariantCulture)
+                Id = attachment.Id.ToString(),
+                Name = Path.GetFileName(attachmentFromFiles.Name),
+                SizeInMb = ByteSize.FromBytes(attachmentFromFiles.SizeInBytes).MegaBytes.ToString(CultureInfo.InvariantCulture)
             };
         }
     }

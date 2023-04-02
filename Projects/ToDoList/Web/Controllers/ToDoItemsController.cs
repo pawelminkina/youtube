@@ -32,7 +32,7 @@ public class ToDoItemsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Add([FromForm] ToDoItemToAdd toDoItem, [FromForm] List<IFormFile> attachments, CancellationToken ct)
     {
-        var attachmentsDto = attachments.Select(f => new AttachmentToAdd()
+        var attachmentsDto = attachments.Select(f => new AttachmentInFileSystem()
         {
             Content = f.OpenReadStream(),
             Name = f.FileName
