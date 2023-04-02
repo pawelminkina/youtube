@@ -63,6 +63,7 @@ public class ToDoItemsService : IToDoItemsService
             var tasks = attachments.Select(s => Task.Run(async () => await _attachmentService.AddAttachmentAsync(s, ct), ct));
             
             var attToAdd = await Task.WhenAll(tasks);
+            
             var itemToAdd = new ToDoItem()
             {
                 Description = toDoItem.Description!,
@@ -90,7 +91,7 @@ public class ToDoItemsService : IToDoItemsService
 
     public async Task DeleteAsync(Guid id, CancellationToken ct)
     {
-        var itemFromDb = await _dbContext.ToDoItems.FindAsync(id);
+        var itemFromDb = await _dbContext.ToDoItems.FindAsync(id, ct);
 
         if (itemFromDb == null)
         {
@@ -104,7 +105,7 @@ public class ToDoItemsService : IToDoItemsService
 
     public async Task ChangeNameAsync(Guid id, string newName, CancellationToken ct)
     {
-        var itemFromDb = await _dbContext.ToDoItems.FindAsync(id);
+        var itemFromDb = await _dbContext.ToDoItems.FindAsync(id, ct);
 
         if (itemFromDb == null)
         {
