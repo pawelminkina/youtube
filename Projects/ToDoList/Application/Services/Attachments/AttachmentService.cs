@@ -26,12 +26,15 @@ public class AttachmentService : IAttachmentsService
     {
         var attachmentFromDb = await GetAttachmentFromDbAsync(id, ct);
 
+        _dbContext.ToDoAttachments.Remove(attachmentFromDb);
+        await _dbContext.SaveChangesAsync(ct);
+
         await _fileAttachmentService.RemoveAttachmentAsync(attachmentFromDb.Path, ct);
     }
 
     private async Task<ToDoAttachment> GetAttachmentFromDbAsync(Guid id, CancellationToken ct)
     {
-        var attachmentFromDb = await _dbContext.ToDoAttachments.FindAsync(id);
+        var attachmentFromDb = await _dbContext.ToDoAttachments.FindAsync(id, ct);
 
         if (attachmentFromDb == null)
         {
