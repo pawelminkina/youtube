@@ -4,7 +4,6 @@ using Application.Common.Interfaces;
 using Application.Models;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
-using System.IO;
 
 namespace Infrastructure.Files;
 

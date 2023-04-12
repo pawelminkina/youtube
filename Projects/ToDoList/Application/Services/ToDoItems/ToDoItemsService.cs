@@ -14,7 +14,7 @@ public class ToDoItemsService : IToDoItemsService
     private readonly IApplicationDbContext _dbContext;
     private readonly IFileAttachmentService _attachmentService;
 
-    public ToDoItemsService(IApplicationDbContext dbContext, IFileAttachmentService attachmentService)
+    public ToDoItemsService(IFileAttachmentService attachmentService, IApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
         _attachmentService = attachmentService;

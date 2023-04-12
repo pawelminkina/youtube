@@ -2,6 +2,7 @@
 using Application.Common.Interfaces;
 using Application.Models;
 using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.Attachments;
 
@@ -34,7 +35,7 @@ public class AttachmentService : IAttachmentsService
 
     private async Task<ToDoAttachment> GetAttachmentFromDbAsync(Guid id, CancellationToken ct)
     {
-        var attachmentFromDb = await _dbContext.ToDoAttachments.FindAsync(id, ct);
+        var attachmentFromDb = await _dbContext.ToDoAttachments.FirstOrDefaultAsync(s=>s.Id == id, ct);
 
         if (attachmentFromDb == null)
         {
