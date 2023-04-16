@@ -8,5 +8,5 @@ public interface IToDoItemsService
     public IAsyncEnumerable<ToDoItemDto> GetAllAsync(CancellationToken ct);
     public Task<Guid> AddAsync(ToDoItemToAdd toDoItem, IEnumerable<AttachmentInFileSystem> attachments, CancellationToken ct);
     public Task DeleteAsync(Guid id, CancellationToken ct);
-    public Task ChangeNameAsync(Guid id, string newName, CancellationToken ct);
+    public Task ChangeStatusAsync(Guid id, CancellationToken ct);
 }

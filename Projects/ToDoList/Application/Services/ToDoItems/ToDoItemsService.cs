@@ -103,7 +103,7 @@ public class ToDoItemsService : IToDoItemsService
         await _dbContext.SaveChangesAsync(ct);
     }
 
-    public async Task ChangeNameAsync(Guid id, string newName, CancellationToken ct)
+    public async Task ChangeStatusAsync(Guid id, CancellationToken ct)
     {
         var itemFromDb = await _dbContext.ToDoItems.FindAsync(id, ct);
 
@@ -112,7 +112,7 @@ public class ToDoItemsService : IToDoItemsService
             throw new NotFoundException(nameof(ToDoItem), id);
         }
 
-        itemFromDb.Name = newName;
+        itemFromDb.IsCompleted = !itemFromDb.IsCompleted;
 
         await _dbContext.SaveChangesAsync(ct);
     }

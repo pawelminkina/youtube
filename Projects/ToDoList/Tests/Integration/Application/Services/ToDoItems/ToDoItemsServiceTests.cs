@@ -4,7 +4,6 @@ using Application.Services.ToDoItems;
 using AutoFixture;
 using Domain.Entities;
 using NSubstitute;
-using System.Net.Mail;
 using FluentAssertions;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +12,7 @@ namespace Integration.Application.Services.ToDoItems;
 
 public class ToDoItemsServiceTests
 {
-    private static Guid _databaseName = Guid.Empty;
+    private static DbContextOptions<ApplicationDbContext>? _options;
     private readonly Fixture _fixture = new();
 
     public ToDoItemsServiceTests()
@@ -24,13 +23,13 @@ public class ToDoItemsServiceTests
     [SetUp]
     public void SetUp()
     {
-        _databaseName = Guid.NewGuid();
+        _options = new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
     }
 
     [TearDown]
     public void TearDown()
     {
-        _databaseName = Guid.Empty;
+        _options = null;
     }
 
     [Test]
@@ -53,14 +52,32 @@ public class ToDoItemsServiceTests
         res.Should().BeEquivalentTo(expected);
     }
 
+    [Test]
+    public async Task AddAsync_AddsItemToDatabase()
+    {
+        //GIVEN item to add
+        var itemToAdd = _fixture.Create<ToDoItemToAdd>();
+
+        //WHEN method is called
+        var sut = CreateSut(null, Enumerable.Empty<ToDoItem>());
+        var result = await sut.AddAsync(itemToAdd, Enumerable.Empty<AttachmentInFileSystem>(), CancellationToken.None);
+
+        //THEN check whether item is present in database
+        var dbContext = new ApplicationDbContext(_options!);
+        var itemFromDb = dbContext.ToDoItems.First(s=>s.Name== itemToAdd.Name && s.Description == itemToAdd.Description);
+        itemFromDb.Id.Should().Be(result);
+    }
+
     private static ToDoItemsService CreateSut(IFileAttachmentService? fileAttachmentService, IEnumerable<ToDoItem> items)
     {
         fileAttachmentService ??= Substitute.For<IFileAttachmentService>();
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(_databaseName.ToString());
-        var dbContext = new ApplicationDbContext(options.Options);
-        
-        dbContext.AddRange(items);
-        dbContext.SaveChanges();
+        var dbContext = new ApplicationDbContext(_options!);
+
+        if (items.Any())
+        {
+            dbContext.AddRange(items);
+            dbContext.SaveChanges();
+        }
 
         return new ToDoItemsService(fileAttachmentService, dbContext);
     }

@@ -51,10 +51,10 @@ public class ToDoItemsController : ControllerBase
         return NoContent();
     }
 
-    [HttpPut("{id:guid}/name")]
-    public async Task<IActionResult> UpdateName(Guid id, [FromQuery] string name, CancellationToken ct)
+    [HttpPut("{id:guid}/status")]
+    public async Task<IActionResult> ChangeStatusAsync(Guid id, CancellationToken ct)
     {
-        await _toDoItemsService.ChangeNameAsync(id, name, ct);
+        await _toDoItemsService.ChangeStatusAsync(id, ct);
         return NoContent();
     }
 }
