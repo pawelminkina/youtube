@@ -1,5 +1,4 @@
-﻿using Application.Common.Interfaces;
-using Application.Services.Attachments;
+﻿using Application.Services.Attachments;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Web.Controllers;

@@ -13,4 +13,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public DbSet<ToDoItem> ToDoItems => Set<ToDoItem>();
     public DbSet<ToDoAttachment> ToDoAttachments => Set<ToDoAttachment>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        base.OnModelCreating(modelBuilder);
+    }
 }
