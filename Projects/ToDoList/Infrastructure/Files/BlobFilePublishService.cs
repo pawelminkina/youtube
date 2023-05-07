@@ -28,7 +28,7 @@ public class BlobFilePublishService : IPublishToDoService
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
             WriteIndented = true
         };
-        using var stream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(item, jsonOptions))
+        using var stream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(item, jsonOptions));
         await _blobContainerClient.UploadBlobAsync($"{item.Id}.json", stream);
     }
 }
