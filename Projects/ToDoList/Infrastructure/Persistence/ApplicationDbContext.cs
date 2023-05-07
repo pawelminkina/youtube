@@ -12,6 +12,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     }
 
     public DbSet<ToDoItem> ToDoItems => Set<ToDoItem>();
+    public DbSet<SampleEntity> Samples => Set<SampleEntity>();
     public DbSet<ToDoAttachment> ToDoAttachments => Set<ToDoAttachment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

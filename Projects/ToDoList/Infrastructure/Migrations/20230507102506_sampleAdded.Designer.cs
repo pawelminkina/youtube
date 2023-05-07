@@ -4,6 +4,7 @@ using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230507102506_sampleAdded")]
+    partial class sampleAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,64 +83,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Samples");
                 });
 
-            modelBuilder.Entity("Domain.Entities.SecondSample", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("RandomDeeperPropertyEight")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RandomDeeperPropertyFive")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RandomDeeperPropertyFour")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RandomDeeperPropertyNine")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RandomDeeperPropertyOne")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RandomDeeperPropertySeven")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RandomDeeperPropertySix")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RandomDeeperPropertyTen")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RandomDeeperPropertyThree")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RandomDeeperPropertyTwo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("SampleEntityId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
-
-                    b.HasIndex("SampleEntityId");
-
-                    b.ToTable("SecondSample");
-                });
-
             modelBuilder.Entity("Domain.Entities.ToDoAttachment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -196,17 +141,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("ToDo");
                 });
 
-            modelBuilder.Entity("Domain.Entities.SecondSample", b =>
-                {
-                    b.HasOne("Domain.Entities.SampleEntity", "SampleEntity")
-                        .WithMany("SecondSamples")
-                        .HasForeignKey("SampleEntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SampleEntity");
-                });
-
             modelBuilder.Entity("Domain.Entities.ToDoAttachment", b =>
                 {
                     b.HasOne("Domain.Entities.ToDoItem", "ToDoItem")
@@ -216,11 +150,6 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("ToDoItem");
-                });
-
-            modelBuilder.Entity("Domain.Entities.SampleEntity", b =>
-                {
-                    b.Navigation("SecondSamples");
                 });
 
             modelBuilder.Entity("Domain.Entities.ToDoItem", b =>

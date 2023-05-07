@@ -22,7 +22,9 @@ public class ToDoItemsService : IToDoItemsService
 
     public async Task<ToDoItemDto> GetAsync(Guid id, CancellationToken ct)
     {
-        var itemFromDb = _dbContext.ToDoItems.Include(s=>s.Attachments).FirstOrDefault(f=>f.Id == id);
+        var query = _dbContext.ToDoItems.Include(s=>s.Attachments);
+        var str = query.ToQueryString();
+        var itemFromDb = query.FirstOrDefault(f=>f.Id == id);
 
         if (itemFromDb == null)
         {
@@ -41,6 +43,18 @@ public class ToDoItemsService : IToDoItemsService
 
     public async IAsyncEnumerable<ToDoItemDto> GetAllAsync([EnumeratorCancellation] CancellationToken ct)
     {
+        var notMappedToDto = _dbContext.ToDoItems.Include(s => s.Samples).ThenInclude(s => s.SecondSamples).ToList();
+
+        var mappedToDto = GetSampleModels(notMappedToDto);
+
+        var mappedToDto = _dbContext.ToDoItems.SelectMany(todo => todo.Samples.SelectMany(firstSample =>
+            firstSample.SecondSamples.Select(secondSample => new SampleModelDto()
+            {
+                ToDoId = todo.Id.ToString(),
+                SecondSampleFourthItem = secondSample.RandomDeeperPropertyFour,
+                SecondSampleThirdItem = secondSample.RandomDeeperPropertyThree
+            }))).ToList();
+
         var toDoItems = _dbContext.ToDoItems.Include(s => s.Attachments);
 
         foreach (var toDoItemDto in toDoItems)
@@ -53,6 +67,25 @@ public class ToDoItemsService : IToDoItemsService
                 Name = toDoItemDto.Name,
                 Attachments = await GetAttachmentReferencesForFileAsync(toDoItemDto, ct).ToListAsync(ct)
             };
+        }
+    }
+
+    private IEnumerable<SampleModelDto> GetSampleModels(List<ToDoItem> toDoItems)
+    {
+        foreach (var toDoItem in toDoItems)
+        {
+            foreach (var sampleEntity in toDoItem.Samples)
+            {
+                foreach (var sampleEntitySecondSample in sampleEntity.SecondSamples)
+                {
+                    yield return new SampleModelDto()
+                    {
+                        ToDoId = toDoItem.Id.ToString(),
+                        SecondSampleFourthItem = sampleEntitySecondSample.RandomDeeperPropertyFour,
+                        SecondSampleThirdItem = sampleEntitySecondSample.RandomDeeperPropertyThree
+                    };
+                }
+            }
         }
     }
 
