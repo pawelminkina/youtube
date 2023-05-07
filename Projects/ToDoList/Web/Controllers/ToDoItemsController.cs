@@ -57,4 +57,11 @@ public class ToDoItemsController : ControllerBase
         await _toDoItemsService.ChangeStatusAsync(id, ct);
         return NoContent();
     }
+
+    [HttpPost("publish")]
+    public async Task<IActionResult> PublishAllToDoItems(CancellationToken ct)
+    {
+        await _toDoItemsService.PublishAllToDoItems(ct);
+        return NoContent();
+    }
 }

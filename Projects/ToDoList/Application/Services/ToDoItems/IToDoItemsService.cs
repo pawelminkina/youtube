@@ -9,4 +9,5 @@ public interface IToDoItemsService
     public Task<Guid> AddAsync(ToDoItemToAdd toDoItem, IEnumerable<AttachmentInFileSystem> attachments, CancellationToken ct);
     public Task DeleteAsync(Guid id, CancellationToken ct);
     public Task ChangeStatusAsync(Guid id, CancellationToken ct);
+    public Task PublishAllToDoItems(CancellationToken ct);
 }

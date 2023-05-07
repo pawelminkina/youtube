@@ -13,6 +13,7 @@ public static class DependencyInjection
     {
         AddDbContext(services, configuration);
         services.AddScoped<IFileAttachmentService, BlobFileAttachmentService>();
+        services.AddScoped<IPublishToDoService, BlobFilePublishService>();
         return services;
     }
 

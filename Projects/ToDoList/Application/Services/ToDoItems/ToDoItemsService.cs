@@ -1,22 +1,28 @@
 ﻿using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Models;
 using ByteSizeLib;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services.ToDoItems;
 
 public class ToDoItemsService : IToDoItemsService
 {
     private readonly IApplicationDbContext _dbContext;
+    private readonly IPublishToDoService _publishToDo;
+    private readonly ILogger<ToDoItemsService> _logger;
     private readonly IFileAttachmentService _attachmentService;
 
-    public ToDoItemsService(IFileAttachmentService attachmentService, IApplicationDbContext dbContext)
+    public ToDoItemsService(IFileAttachmentService attachmentService, IApplicationDbContext dbContext, IPublishToDoService publishToDo, ILogger<ToDoItemsService> logger)
     {
         _dbContext = dbContext;
+        _publishToDo = publishToDo;
+        _logger = logger;
         _attachmentService = attachmentService;
     }
 
@@ -43,18 +49,6 @@ public class ToDoItemsService : IToDoItemsService
 
     public async IAsyncEnumerable<ToDoItemDto> GetAllAsync([EnumeratorCancellation] CancellationToken ct)
     {
-        var notMappedToDto = _dbContext.ToDoItems.Include(s => s.Samples).ThenInclude(s => s.SecondSamples).ToList();
-
-        var mappedToDto = GetSampleModels(notMappedToDto);
-
-        var mappedToDto = _dbContext.ToDoItems.SelectMany(todo => todo.Samples.SelectMany(firstSample =>
-            firstSample.SecondSamples.Select(secondSample => new SampleModelDto()
-            {
-                ToDoId = todo.Id.ToString(),
-                SecondSampleFourthItem = secondSample.RandomDeeperPropertyFour,
-                SecondSampleThirdItem = secondSample.RandomDeeperPropertyThree
-            }))).ToList();
-
         var toDoItems = _dbContext.ToDoItems.Include(s => s.Attachments);
 
         foreach (var toDoItemDto in toDoItems)
@@ -67,25 +61,6 @@ public class ToDoItemsService : IToDoItemsService
                 Name = toDoItemDto.Name,
                 Attachments = await GetAttachmentReferencesForFileAsync(toDoItemDto, ct).ToListAsync(ct)
             };
-        }
-    }
-
-    private IEnumerable<SampleModelDto> GetSampleModels(List<ToDoItem> toDoItems)
-    {
-        foreach (var toDoItem in toDoItems)
-        {
-            foreach (var sampleEntity in toDoItem.Samples)
-            {
-                foreach (var sampleEntitySecondSample in sampleEntity.SecondSamples)
-                {
-                    yield return new SampleModelDto()
-                    {
-                        ToDoId = toDoItem.Id.ToString(),
-                        SecondSampleFourthItem = sampleEntitySecondSample.RandomDeeperPropertyFour,
-                        SecondSampleThirdItem = sampleEntitySecondSample.RandomDeeperPropertyThree
-                    };
-                }
-            }
         }
     }
 
@@ -163,5 +138,26 @@ public class ToDoItemsService : IToDoItemsService
                 SizeInMb = ByteSize.FromBytes(attachmentFromFiles.SizeInBytes).MegaBytes.ToString(CultureInfo.InvariantCulture)
             };
         }
+    }
+
+    public async Task PublishAllToDoItems(CancellationToken ct)
+    {
+        var usagesInKb = new StringBuilder();
+        usagesInKb.AppendLine();
+        usagesInKb.AppendLine($"Before: {ByteSize.FromBytes(GC.GetTotalMemory(true)).KiloBytes.ToString(CultureInfo.InvariantCulture)}");
+
+        var items = _dbContext.ToDoItems.Include(s => s.Samples).ThenInclude(s => s.SecondSamples).AsEnumerable();
+
+        foreach (var toDoItem in items)
+        {
+            await _publishToDo.PublishToDoAsync(toDoItem);
+            usagesInKb.AppendLine($"In progress: {ByteSize.FromBytes(GC.GetTotalMemory(true)).KiloBytes.ToString(CultureInfo.InvariantCulture)}");
+            ct.ThrowIfCancellationRequested();
+        }
+
+        usagesInKb.AppendLine();
+        usagesInKb.Append($"After: {ByteSize.FromBytes(GC.GetTotalMemory(true)).KiloBytes.ToString(CultureInfo.InvariantCulture)}");
+
+        _logger.LogInformation(usagesInKb.ToString());
     }
 }
